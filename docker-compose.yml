@@ -6,16 +6,17 @@ services:
     image: linuxserver/transmission
     ports:
       - "9091:9091" # WebUI ("/transmission/web/")
-    volumes: []
-    #- :/config
-    #- :/watch
-    #- :/downloads
+    volumes:
+      - ${DATA}/transmission/config:/config
+      - ${DATA}/transmission/watch:/watch
+      - ${DATA}/transmission/downloads:/downloads
   # Plex server
   plex:
     image: linuxserver/plex
     restart: unless-stopped
     ports:
       - "32400:32400" # WebUI ("/web")
-    volumes: []
-    #- :/config
-    #- :/transcode
+    volumes:
+      - ${DATA}/plex/config:/config
+      - ${DATA}/plex/transcode:/transcode
+      - ${DATA}/transmission/downloads/complete:/data
