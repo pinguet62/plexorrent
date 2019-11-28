@@ -1,2 +1,12 @@
 version: '2'
-services: {}
+services:
+  # Torrent client
+  torrent:
+    # https://hub.docker.com/r/linuxserver/transmission
+    image: linuxserver/transmission
+    ports:
+      - "9091:9091" # WebUI ("/transmission/web/")
+    volumes: []
+    #- :/config
+    #- :/watch
+    #- :/downloads
