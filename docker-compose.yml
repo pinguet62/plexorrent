@@ -10,3 +10,12 @@ services:
     #- :/config
     #- :/watch
     #- :/downloads
+  # Plex server
+  plex:
+    image: linuxserver/plex
+    restart: unless-stopped
+    ports:
+      - "32400:32400" # WebUI ("/web")
+    volumes: []
+    #- :/config
+    #- :/transcode
