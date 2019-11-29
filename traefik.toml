@@ -1,0 +1,20 @@
+debug = false
+
+logLevel = "INFO"
+defaultEntryPoints = ["https", "http"]
+
+[file]
+watch = true
+
+# UI
+[web]
+address = ":8080"
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+
+[retry]
+
+[docker]
+#watch = true

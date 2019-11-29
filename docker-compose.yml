@@ -1,5 +1,20 @@
-version: '2'
+version: "2"
 services:
+  # Reverse proxy
+  proxy:
+    image: traefik:1.7
+    command:
+      - "--docker.domain=${DOMAIN}"
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS
+      - "8080:8080" # UI
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml
+    labels:
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=Host:proxy.${DOMAIN}"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
@@ -10,6 +25,9 @@ services:
       - ${DATA}/transmission/config:/config
       - ${DATA}/transmission/watch:/watch
       - ${DATA}/transmission/downloads:/downloads
+    labels:
+      - "traefik.port=9091"
+      - "traefik.frontend.rule=Host:torrent.${DOMAIN}"
   # Plex server
   plex:
     image: linuxserver/plex
@@ -20,3 +38,6 @@ services:
       - ${DATA}/plex/config:/config
       - ${DATA}/plex/transcode:/transcode
       - ${DATA}/transmission/downloads/complete:/data
+    labels:
+      - "traefik.port=32400"
+      - "traefik.frontend.rule=Host:plex.${DOMAIN}"
