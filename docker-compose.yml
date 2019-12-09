@@ -15,6 +15,14 @@ services:
     labels:
       - "traefik.port=8080"
       - "traefik.frontend.rule=Host:proxy.${DOMAIN}"
+  # File manager
+  filemanager:
+    image: filebrowser/filebrowser
+    ports:
+      - "8082:80"
+    volumes:
+      - ${DATA}:/srv
+      #- ${DATA}/filemanager/database.db:/database.db
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
