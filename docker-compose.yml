@@ -2,19 +2,18 @@ version: "2"
 services:
   # Reverse proxy
   proxy:
-    image: traefik:1.7
-    command:
-      - "--docker.domain=${DOMAIN}"
+    image: traefik:v2.1.0-rc3
+    command: >
+      --api.insecure=true
+      --providers.docker
     ports:
       - "80:80" # HTTP
       - "443:443" # HTTPS
       - "8080:8080" # UI
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.toml:/etc/traefik/traefik.toml
     labels:
-      - "traefik.port=8080"
-      - "traefik.frontend.rule=Host:proxy.${DOMAIN}"
+      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN}`)"
   # File management
   webdav:
     image: bytemark/webdav:2.4
@@ -27,8 +26,7 @@ services:
     volumes:
       - ${DATA}:/var/lib/dav/data
     labels:
-      - "traefik.port=80"
-      - "traefik.frontend.rule=Host:webdav.${DOMAIN}"
+      - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN}`)"
   filemanager:
     image: filebrowser/filebrowser:v2.0.16
     ports:
@@ -37,8 +35,7 @@ services:
       - ${DATA}:/srv
       #- ${DATA}/filemanager/database.db:/database.db
     labels:
-      - "traefik.port=80"
-      - "traefik.frontend.rule=Host:filemanager.${DOMAIN}"
+      - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN}`)"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
@@ -50,8 +47,7 @@ services:
       - ${DATA}/transmission/watch:/watch
       - ${DATA}/transmission/downloads:/downloads
     labels:
-      - "traefik.port=9091"
-      - "traefik.frontend.rule=Host:torrent.${DOMAIN}"
+      - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN}`)"
   # Plex server
   plex:
     image: linuxserver/plex:1.18.2.2058-e67a4e892-ls71
@@ -63,5 +59,4 @@ services:
       - ${DATA}/plex/transcode:/transcode
       - ${DATA}/transmission/downloads/complete:/data
     labels:
-      - "traefik.port=32400"
-      - "traefik.frontend.rule=Host:plex.${DOMAIN}"
+      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
