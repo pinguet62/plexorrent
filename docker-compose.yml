@@ -26,6 +26,9 @@ services:
       - PASSWORD=${PASSWORD}
     volumes:
       - ${DATA}:/var/lib/dav/data
+    labels:
+      - "traefik.port=80"
+      - "traefik.frontend.rule=Host:webdav.${DOMAIN}"
   filemanager:
     image: filebrowser/filebrowser
     ports:
@@ -33,6 +36,9 @@ services:
     volumes:
       - ${DATA}:/srv
       #- ${DATA}/filemanager/database.db:/database.db
+    labels:
+      - "traefik.port=80"
+      - "traefik.frontend.rule=Host:filemanager.${DOMAIN}"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
