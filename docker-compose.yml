@@ -15,7 +15,17 @@ services:
     labels:
       - "traefik.port=8080"
       - "traefik.frontend.rule=Host:proxy.${DOMAIN}"
-  # File manager
+  # File management
+  webdav:
+    image: bytemark/webdav
+    ports:
+      - "8081:80"
+    environment:
+      - AUTH_TYPE=Digest
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+    volumes:
+      - ${DATA}:/var/lib/dav/data
   filemanager:
     image: filebrowser/filebrowser
     ports:
