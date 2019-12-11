@@ -13,7 +13,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN}`)"
+      - "traefik.http.routers.proxy.rule=PathPrefix(`/proxy`)"
   # File management
   webdav:
     image: bytemark/webdav:2.4
@@ -26,16 +26,17 @@ services:
     volumes:
       - ${DATA}:/var/lib/dav/data
     labels:
-      - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN}`)"
+      - "traefik.http.routers.webdav.rule=PathPrefix(`/webdav`)"
   filemanager:
     image: filebrowser/filebrowser:v2.0.16
+    command: --baseurl "/filemanager" # equal to Traefik's PathPrefix value
     ports:
       - "8082:80"
     volumes:
       - ${DATA}:/srv
       #- ${DATA}/filemanager/database.db:/database.db
     labels:
-      - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN}`)"
+      - "traefik.http.routers.filemanager.rule=PathPrefix(`/filemanager`)"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
@@ -47,7 +48,7 @@ services:
       - ${DATA}/transmission/watch:/watch
       - ${DATA}/transmission/downloads:/downloads
     labels:
-      - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN}`)"
+      - "traefik.http.routers.torrent.rule=PathPrefix(`/transmission`)" # "/transmission" imposed by 301 redirection
   # Plex server
   plex:
     image: linuxserver/plex:1.18.2.2058-e67a4e892-ls71
@@ -59,4 +60,4 @@ services:
       - ${DATA}/plex/transcode:/transcode
       - ${DATA}/transmission/downloads/complete:/data
     labels:
-      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
+      - "traefik.http.routers.plex.rule=PathPrefix(`/plex`)"
