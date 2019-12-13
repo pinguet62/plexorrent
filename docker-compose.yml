@@ -14,6 +14,9 @@ services:
     labels:
       - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN}`)"
       - "traefik.http.services.proxy.loadbalancer.server.port=8080"
+      - "traefik.http.routers.proxy.service=api@internal"
+      - "traefik.http.routers.proxy.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME}:${PASSWORD_MD5}"
   # File management
   webdav:
     image: bytemark/webdav:2.4
@@ -38,6 +41,9 @@ services:
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
     image: linuxserver/transmission:2.94-r2-ls36
+    environment:
+      - USER=${USERNAME}
+      - PASS=${PASSWORD}
     volumes:
       - ${DATA}/transmission/config:/config
       - ${DATA}/transmission/watch:/watch
