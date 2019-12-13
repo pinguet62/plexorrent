@@ -1,0 +1,18 @@
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.debug.yml [...]
+version: "3.7"
+services:
+  proxy:
+    ports:
+      - "8080:8080" # WebUI
+  webdav:
+    ports:
+      - "8081:80"
+  filemanager:
+    ports:
+      - "8082:80"
+  torrent:
+    ports:
+      - "9091:9091" # WebUI ("/transmission/web/")
+  plex:
+    ports:
+      - "32400:32400" # WebUI ("/web")
