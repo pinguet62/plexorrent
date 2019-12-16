@@ -12,22 +12,22 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN}`)"
+      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN:?err}`)"
       - "traefik.http.services.proxy.loadbalancer.server.port=8080"
       - "traefik.http.routers.proxy.service=api@internal"
       - "traefik.http.routers.proxy.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME}:${PASSWORD_MD5}"
+      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME:?err}:${PASSWORD_MD5:?err}"
   # File management
   webdav:
     image: bytemark/webdav:2.4
     environment:
       - AUTH_TYPE=Digest
-      - USERNAME=${USERNAME}
-      - PASSWORD=${PASSWORD}
+      - USERNAME=${USERNAME:?err}
+      - PASSWORD=${PASSWORD:?err}
     volumes:
-      - ${DATA}:/var/lib/dav/data
+      - ${DATA:?err}:/var/lib/dav/data
     labels:
-      - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN}`)"
+      - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN:?err}`)"
       - "traefik.http.services.webdav.loadbalancer.server.port=80"
   filemanager:
     # Custom "/database.db" path:
@@ -38,37 +38,37 @@ services:
     image: pinguet62/filebrowser-alpine
     entrypoint: sh -c "
       if [ ! -f /root/database.db ]; then /filebrowser -d /root/database.db config init ; fi &&
-      if /filebrowser -d /root/database.db users ls | grep ${USERNAME} ; then /filebrowser -d /root/database.db users rm ${USERNAME} ; fi &&
-      /filebrowser -d /root/database.db users add ${USERNAME} ${PASSWORD} &&
+      if /filebrowser -d /root/database.db users ls | grep ${USERNAME:?err} ; then /filebrowser -d /root/database.db users rm ${USERNAME:?err} ; fi &&
+      /filebrowser -d /root/database.db users add ${USERNAME:?err} ${PASSWORD:?err} &&
       /filebrowser -d /root/database.db"
     volumes:
-      - ${DATA}:/srv
-      - ${DATA}/filemanager:/root
+      - ${DATA:?err}:/srv
+      - ${DATA:?err}/filemanager:/root
     labels:
-      - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN}`)"
+      - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN:?err}`)"
       - "traefik.http.services.filemanager.loadbalancer.server.port=80"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
     image: linuxserver/transmission:2.94-r2-ls36
     environment:
-      - USER=${USERNAME}
-      - PASS=${PASSWORD}
+      - USER=${USERNAME:?err}
+      - PASS=${PASSWORD:?err}
     volumes:
-      - ${DATA}/transmission/config:/config
-      - ${DATA}/transmission/watch:/watch
-      - ${DATA}/transmission/downloads:/downloads
+      - ${DATA:?err}/transmission/config:/config
+      - ${DATA:?err}/transmission/watch:/watch
+      - ${DATA:?err}/transmission/downloads:/downloads
     labels:
-      - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN}`)"
+      - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN:?err}`)"
       - "traefik.http.services.torrent.loadbalancer.server.port=9091"
   # Plex server
   plex:
     image: linuxserver/plex:1.18.2.2058-e67a4e892-ls71
     restart: unless-stopped
     volumes:
-      - ${DATA}/plex/config:/config
-      - ${DATA}/plex/transcode:/transcode
-      - ${DATA}/transmission/downloads/complete:/data
+      - ${DATA:?err}/plex/config:/config
+      - ${DATA:?err}/plex/transcode:/transcode
+      - ${DATA:?err}/transmission/downloads/complete:/data
     labels:
-      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN}`)"
+      - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN:?err}`)"
       - "traefik.http.services.plex.loadbalancer.server.port=32400"
