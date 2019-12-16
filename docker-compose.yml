@@ -30,10 +30,20 @@ services:
       - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN}`)"
       - "traefik.http.services.webdav.loadbalancer.server.port=80"
   filemanager:
-    image: filebrowser/filebrowser:v2.0.16
+    # Custom "/database.db" path:
+    # - map its parent path, to avoid folder self-creation, because declared as volume
+    # - use sub-directory, to avoid mapping of root filesystem "/"
+    build:
+      context: filebrowser-alpine
+    image: pinguet62/filebrowser-alpine
+    entrypoint: sh -c "
+      if [ ! -f /root/database.db ]; then /filebrowser -d /root/database.db config init ; fi &&
+      if /filebrowser -d /root/database.db users ls | grep ${USERNAME} ; then /filebrowser -d /root/database.db users rm ${USERNAME} ; fi &&
+      /filebrowser -d /root/database.db users add ${USERNAME} ${PASSWORD} &&
+      /filebrowser -d /root/database.db"
     volumes:
       - ${DATA}:/srv
-      #- ${DATA}/filemanager/database.db:/database.db
+      - ${DATA}/filemanager:/root
     labels:
       - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN}`)"
       - "traefik.http.services.filemanager.loadbalancer.server.port=80"
