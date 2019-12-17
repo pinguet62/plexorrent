@@ -16,7 +16,7 @@ services:
       - "traefik.http.services.proxy.loadbalancer.server.port=8080"
       - "traefik.http.routers.proxy.service=api@internal"
       - "traefik.http.routers.proxy.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME:?err}:${PASSWORD_MD5:?err}"
+      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME_PASSWORD_MD5:?err}"
   # File management
   webdav:
     image: bytemark/webdav:2.4
