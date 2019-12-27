@@ -3,20 +3,22 @@ services:
   # Reverse proxy
   proxy:
     image: traefik:v2.1.0-rc3
-    command: >
-      --api.insecure=true
-      --providers.docker
+    command:
+      - --api
+      - --providers.docker
     ports:
       - "80:80" # HTTP
       - "443:443" # HTTPS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
-      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN:?err}`)"
-      - "traefik.http.services.proxy.loadbalancer.server.port=8080"
-      - "traefik.http.routers.proxy.service=api@internal"
+      # security
+      - "traefik.http.middlewares.auth.basicAuth.users=${USERNAME_PASSWORD_MD5:?err}"
       - "traefik.http.routers.proxy.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=${USERNAME_PASSWORD_MD5:?err}"
+      - "traefik.http.routers.proxy.service=api@internal"
+      # routing
+      - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN:?err}`)"
+      - "traefik.http.services.proxy.loadBalancer.server.port=8080"
   # File management
   webdav:
     image: bytemark/webdav:2.4
@@ -27,8 +29,9 @@ services:
     volumes:
       - ${DATA:?err}:/var/lib/dav/data
     labels:
+      # routing
       - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN:?err}`)"
-      - "traefik.http.services.webdav.loadbalancer.server.port=80"
+      - "traefik.http.services.webdav.loadBalancer.server.port=80"
   filemanager:
     # Custom "/database.db" path:
     # - map its parent path, to avoid folder self-creation, because declared as volume
@@ -45,8 +48,9 @@ services:
       - ${DATA:?err}:/srv
       - ${DATA:?err}/filemanager:/root
     labels:
+      # routing
       - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN:?err}`)"
-      - "traefik.http.services.filemanager.loadbalancer.server.port=80"
+      - "traefik.http.services.filemanager.loadBalancer.server.port=80"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
@@ -59,8 +63,9 @@ services:
       - ${DATA:?err}/transmission/watch:/watch
       - ${DATA:?err}/transmission/downloads:/downloads
     labels:
+      # routing
       - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN:?err}`)"
-      - "traefik.http.services.torrent.loadbalancer.server.port=9091"
+      - "traefik.http.services.torrent.loadBalancer.server.port=9091"
   # Plex server
   plex:
     image: linuxserver/plex:1.18.2.2058-e67a4e892-ls71
@@ -70,5 +75,6 @@ services:
       - ${DATA:?err}/plex/transcode:/transcode
       - ${DATA:?err}/transmission/downloads/complete:/data
     labels:
+      # routing
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN:?err}`)"
-      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      - "traefik.http.services.plex.loadBalancer.server.port=32400"
