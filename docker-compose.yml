@@ -6,11 +6,19 @@ services:
     command:
       - --api
       - --providers.docker
+      # https
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      - --certificatesResolvers.letsencrypt.acme.email=${EMAIL:?err}
+      - --certificatesResolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge=true
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=http
     ports:
       - "80:80" # HTTP
       - "443:443" # HTTPS
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DATA:?err}/acme:/etc/traefik/acme
     labels:
       # security
       - "traefik.http.middlewares.auth.basicAuth.users=${USERNAME_PASSWORD_MD5:?err}"
@@ -19,6 +27,9 @@ services:
       # routing
       - "traefik.http.routers.proxy.rule=Host(`proxy.${DOMAIN:?err}`)"
       - "traefik.http.services.proxy.loadBalancer.server.port=8080"
+      # https
+      - "traefik.http.routers.proxy.tls=true"
+      - "traefik.http.routers.proxy.tls.certResolver=letsencrypt"
   # File management
   webdav:
     image: bytemark/webdav:2.4
@@ -32,6 +43,9 @@ services:
       # routing
       - "traefik.http.routers.webdav.rule=Host(`webdav.${DOMAIN:?err}`)"
       - "traefik.http.services.webdav.loadBalancer.server.port=80"
+      # https
+      - "traefik.http.routers.webdav.tls=true"
+      - "traefik.http.routers.webdav.tls.certResolver=letsencrypt"
   filemanager:
     # Custom "/database.db" path:
     # - map its parent path, to avoid folder self-creation, because declared as volume
@@ -51,6 +65,9 @@ services:
       # routing
       - "traefik.http.routers.filemanager.rule=Host(`filemanager.${DOMAIN:?err}`)"
       - "traefik.http.services.filemanager.loadBalancer.server.port=80"
+      # https
+      - "traefik.http.routers.filemanager.tls=true"
+      - "traefik.http.routers.filemanager.tls.certResolver=letsencrypt"
   # Torrent client
   torrent:
     # https://hub.docker.com/r/linuxserver/transmission
@@ -66,6 +83,9 @@ services:
       # routing
       - "traefik.http.routers.torrent.rule=Host(`torrent.${DOMAIN:?err}`)"
       - "traefik.http.services.torrent.loadBalancer.server.port=9091"
+      # https
+      - "traefik.http.routers.torrent.tls=true"
+      - "traefik.http.routers.torrent.tls.certResolver=letsencrypt"
   # Plex server
   plex:
     image: linuxserver/plex:1.18.2.2058-e67a4e892-ls71
@@ -78,3 +98,6 @@ services:
       # routing
       - "traefik.http.routers.plex.rule=Host(`plex.${DOMAIN:?err}`)"
       - "traefik.http.services.plex.loadBalancer.server.port=32400"
+      # https
+      - "traefik.http.routers.plex.tls=true"
+      - "traefik.http.routers.plex.tls.certResolver=letsencrypt"
